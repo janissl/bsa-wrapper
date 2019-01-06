@@ -1,0 +1,10 @@
+source_language: <ISO 639-1 language code>
+target_language: <ISO 639-1 language code>
+
+corpus_title: <title for the parallel corpus>
+
+original_source_data_directory: /path/to/directory/of/original/source
+source_data_directory: /path/to/directory/of/prepared/source
+work_directory: /path/to/directory/of/work/files
+alignment_index_directory: /path/to/directory/of/sentence/index/files
+output_data_directory: /path/to/directory/of/output/files
