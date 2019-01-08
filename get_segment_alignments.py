@@ -22,22 +22,22 @@ def get_aligned_line_indices(initial_path, aligned_path):
         initial_lines = initial.readlines()
         aligned_lines = aligned.readlines()
 
-        last_aligned_idx = 0
+        full_length = len(initial_lines)
 
-        for aligned_line in aligned_lines:
-            cur_idx = last_aligned_idx
+        while len(aligned_lines):
+            aligned_line = aligned_lines.pop(0)
+            original_segment_found = False
 
-            try:
-                while cur_idx <= len(initial_lines):
-                    cur_idx += 1
-                    aligned_line = get_space_normalized_segment(aligned_line)
-                    initial_line = get_space_normalized_segment(initial_lines[cur_idx - 1])
+            for i in range(len(initial_lines)):
+                if get_space_normalized_segment(aligned_line) == get_space_normalized_segment(initial_lines[i]):
+                    offset = full_length - len(initial_lines)
+                    output_idx = i + 1
+                    aligned_line_indices.append(offset + output_idx)
+                    initial_lines = initial_lines[output_idx:]
+                    original_segment_found = True
+                    break
 
-                    if aligned_line == initial_line:
-                        aligned_line_indices.append(cur_idx)
-                        last_aligned_idx = cur_idx
-                        break
-            except IndexError:
+            if not original_segment_found:
                 aligned_line_indices.append(-1)
 
     return aligned_line_indices
