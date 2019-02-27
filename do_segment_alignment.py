@@ -45,7 +45,7 @@ def do_alignment(cfg):
 
     aligner = os.path.join('bsa', 'align-sents-all-multi-file.pl')
 
-    for entry in os.scandir(os.path.join(cfg['source_data_directory'], 'snt')):
+    for entry in os.scandir(cfg['preprocessed_source_data_directory']):
         if not entry.name.endswith('_{}.snt'.format(cfg['source_language'])):
             continue
 
