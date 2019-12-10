@@ -17,7 +17,6 @@
 
 use strict;
 use warnings;
-no warnings 'recursion';
 use 5.014; # necessary for supporting Unicode in regexes
 
 
@@ -1088,26 +1087,24 @@ close($sents);
 
 # ==============================================================================
 sub length_neg_log_cond_prob_2 {
-	my ($length1, $length2) = @_;
+    my ($length1, $length2) = @_;
 
-	return $cache{$length1}{$length2} if defined $cache{$length1}{$length2};
+    unless (defined $cache{$length1}{$length2}) {
+        my $mean = $length1 * $mean_bead_length_ratio;
+        $cache{$length1}{$length2} = neg_log_poisson($length1, $length2 - 1, $mean, log($mean));
+    }
 
-    my $mean = $length1 * $mean_bead_length_ratio;
-	my $log_mean = log($mean);
-
-    return neg_log_poisson($length1, $length2, $mean, $log_mean);
+    return $cache{$length1}{$length2};
 }
 
 
 sub neg_log_poisson {
-	my ($length1, $length2, $mean, $log_mean) = @_;
+    my ($length1, $length2, $mean, $log_mean) = @_;
 
-	return $mean if $length2 == 0;
-	return $cache{$length1}{$length2} if defined $cache{$length1}{$length2};
+    return $mean - $log_mean if $length2 == 0;
+    $cache{$length1}{$length2} = neg_log_poisson($length1, $length2 - 1, $mean, $log_mean) unless defined $cache{$length1}{$length2};
 
-	$cache{$length1}{$length2} = neg_log_poisson($length1, $length2 - 1, $mean, $log_mean) + log($length2) - $log_mean;
-
-    return $cache{$length1}{$length2};
+    return $cache{$length1}{$length2} + log($length2 + 1) - $log_mean;;
 }
 
 
