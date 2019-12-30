@@ -1087,24 +1087,47 @@ close($sents);
 
 # ==============================================================================
 sub length_neg_log_cond_prob_2 {
-    my ($length1, $length2) = @_;
+	my ($length1, $length2) = @_;
 
-    unless (defined $cache{$length1}{$length2}) {
-        my $mean = $length1 * $mean_bead_length_ratio;
-        $cache{$length1}{$length2} = neg_log_poisson($length1, $length2 - 1, $mean, log($mean));
-    }
+	unless (defined $cache{$length1}{$length2}) {
+		my $mean = $length1 * $mean_bead_length_ratio;
+		fill_in_missing_neg_log_probs($length1, $length2, $mean, log($mean))
+	}
 
-    return $cache{$length1}{$length2};
+	return $cache{$length1}{$length2};
 }
 
 
-sub neg_log_poisson {
-    my ($length1, $length2, $mean, $log_mean) = @_;
+sub get_lowest_length2 {
+	my ($length1, $length2) = @_;
+	my $lowest_length = 0;
 
-    return $mean - $log_mean if $length2 == 0;
-    $cache{$length1}{$length2} = neg_log_poisson($length1, $length2 - 1, $mean, $log_mean) unless defined $cache{$length1}{$length2};
+	unless (defined $cache{$length1}{$length2}) {
+		foreach my $len2 (reverse 0..$length2) {
+			if (defined $cache{$length1}{$len2}) {
+				$lowest_length = $len2;
+				last;
+			}
+		}
+	}
 
-    return $cache{$length1}{$length2} + log($length2 + 1) - $log_mean;;
+	return $lowest_length;
+}
+
+
+sub fill_in_missing_neg_log_probs {
+	my ($length1, $length2, $mean, $log_mean) = @_;
+
+	my $lowest_length2 = get_lowest_length2($length1, $length2);
+
+	if ($lowest_length2 == 0) {
+		++$lowest_length2;
+		$cache{$length1}{$lowest_length2} = $mean - $log_mean;
+	}
+
+	foreach my $len2 ($lowest_length2 + 1..$length2) {
+		$cache{$length1}{$len2} = $cache{$length1}{$len2 - 1} + log($len2) - $log_mean;
+	}
 }
 
 
