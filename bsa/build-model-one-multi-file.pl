@@ -10,9 +10,8 @@ use warnings;
 use 5.014;
 
 
-my ($sent_file_1, $sent_file_2, $em_iterations, $lex_size_cutoff) = @ARGV;
+my ($sent_file_1, $sent_file_2, $lex_size_cutoff) = @ARGV;
 
-$em_iterations //= 4;
 $lex_size_cutoff //= 5000;
 
 my (%token_1_cnt, %token_2_cnt);
@@ -135,7 +134,7 @@ open(my $inw2, "<:encoding(UTF-8)", "$sent_file_2.words") or die "Failed to read
 open(my $train1, ">:encoding(UTF-8)", "$sent_file_1.words.train") or die "Failed to create '$sent_file_1.words.train'!\n$!";
 open(my $train2, ">:encoding(UTF-8)", "$sent_file_2.words.train") or die "Failed to create '$sent_file_2.words.train'!\n$!";
 
-say "Iteration 1";
+say "Initial Iteration";
 
 while (defined($line_1 = <$inw1>) and defined($line_2 = <$inw2>)) {
 	++$sent_ctr;
@@ -197,12 +196,13 @@ say "$num_probs probabilities in model";
 say "";
 
 my ($inw1tr, $inw2tr, $score_sum, $fract_count_limit, $trans_prob_sum);
-my $iteration_count = 1;
+my $iteration_count = 0;
+my $prev_score_sum = 0;
 
-foreach (1..($em_iterations-1)) {
+while (1) {
 	++$iteration_count;
 
-	say "Iteration $iteration_count";
+	say "EM Iteration $iteration_count";
 
 	undef %trans_count;
 	undef %trans_count_sum;
@@ -216,11 +216,6 @@ foreach (1..($em_iterations-1)) {
 	while (defined($line_1 = <$inw1tr>) and defined($line_2 = <$inw2tr>)) {
 		++$sent_ctr;
 		++$print_ctr;
-
-		if ($print_ctr == 100) {
-			print "\r$sent_ctr sentence pairs";
-			$print_ctr = 0;
-		}
 
 		@tokens_1 = split(' ', $line_1);
 		@tokens_2 = split(' ', $line_2);
@@ -256,7 +251,14 @@ foreach (1..($em_iterations-1)) {
 	close($inw2tr);
 	close($inw1tr);
 
-	say "\r$sent_ctr sentence pairs";
+	say "total training score: $score_sum";
+	
+	if ($prev_score_sum > 0 && $score_sum >= $prev_score_sum) {
+		say "Word translation model converged";
+		last;
+	}
+	
+	$prev_score_sum = $score_sum;
 
 	undef $trans_prob;
 	$num_probs = 0;
@@ -271,7 +273,6 @@ foreach (1..($em_iterations-1)) {
 	}
 
 	say "$num_probs probabilities in model";
-	say "total training score: $score_sum";
 	say "";
 }
 
