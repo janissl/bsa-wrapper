@@ -10,9 +10,9 @@ use warnings;
 use 5.014;
 
 
-my ($sent_file_1, $sent_file_2, $lex_size_cutoff) = @ARGV;
+my ($sent_file_1, $sent_file_2) = @ARGV;
 
-$lex_size_cutoff //= 5000;
+my $min_corpus_coverage = 0.9;
 
 my (%token_1_cnt, %token_2_cnt);
 my ($line, $token, @tokens, $count, $prob);
@@ -48,7 +48,7 @@ foreach $token (sort {$token_1_cnt{$b} <=> $token_1_cnt{$a}} keys(%token_1_cnt))
 	$prev_count = $token_count;
 	$token_count = $token_1_cnt{$token};
 
-	last if ($high_prob_type_count >= $lex_size_cutoff and $token_count < $prev_count) or $token_count == 1;
+	last if ($cumulative_freq >= $min_corpus_coverage and $token_count < $prev_count) or $token_count == 1;
 
 	++$high_prob_type_count;
 	$cumulative_count += $token_count;
@@ -101,7 +101,7 @@ foreach $token (sort {$token_2_cnt{$b} <=> $token_2_cnt{$a}} keys(%token_2_cnt))
 	$prev_count = $token_count;
 	$token_count = $token_2_cnt{$token};
 
-	last if ($high_prob_type_count >= $lex_size_cutoff and $token_count < $prev_count) or $token_count == 1;
+	last if ($cumulative_freq >= $min_corpus_coverage and $token_count < $prev_count) or $token_count == 1;
 
 	++$high_prob_type_count;
 	$cumulative_count += $token_count;
