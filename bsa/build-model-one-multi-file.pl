@@ -253,7 +253,7 @@ while (1) {
 
 	say "total training score: $score_sum";
 	
-	if ($prev_score_sum > 0 && $score_sum >= $prev_score_sum) {
+	if (abs($prev_score_sum) > 0 && abs($score_sum) >= abs($prev_score_sum)) {
 		say "Word translation model converged";
 		last;
 	}
