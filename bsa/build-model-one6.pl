@@ -259,19 +259,19 @@ while (1) {
 	if (abs($prev_score_sum) > 0 && abs($score_sum) >= abs($prev_score_sum)) {
 		say "Word translation model converged";
 		last;
-	}
-	
-	$prev_score_sum = $score_sum;
-
-	$trans_prob = {};
-	$num_probs = 0;
-
-	while (($token_1, $ref) = each %trans_count) {
-		$count_sum = $trans_count_sum{$token_1};
-
-		while (($token_2, $count) = each %{$ref}) {
-			$trans_prob->{$token_1}{$token_2} = $count / $count_sum;
-			++$num_probs;
+	} else {
+		$prev_score_sum = $score_sum;
+		
+		$trans_prob = {};
+		$num_probs = 0;
+		
+		while (($token_1, $ref) = each %trans_count) {
+			$count_sum = $trans_count_sum{$token_1};
+			
+			while (($token_2, $count) = each %{$ref}) {
+				$trans_prob->{$token_1}{$token_2} = $count / $count_sum;
+				++$num_probs;
+			}
 		}
 	}
 
