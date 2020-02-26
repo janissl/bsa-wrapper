@@ -16,6 +16,7 @@ my ($sent_file_1, $sent_file_2) = @ARGV;
 
 my $sent_file_2_mod = basename($sent_file_2);
 my $min_corpus_coverage = 0.9;
+my $min_distinct_token_count = 5000;
 
 my (%token_1_cnt, %token_2_cnt);
 my ($line, $token, @tokens, $count, $prob);
@@ -51,7 +52,7 @@ foreach $token (sort {$token_1_cnt{$b} <=> $token_1_cnt{$a}} keys(%token_1_cnt))
 	$prev_count = $token_count;
 	$token_count = $token_1_cnt{$token};
 
-	last if ($cumulative_freq >= $min_corpus_coverage and $token_count < $prev_count) or $token_count == 1;
+	last if ($cumulative_freq >= $min_corpus_coverage and $high_prob_type_count >= $min_distinct_token_count and $token_count < $prev_count) or $token_count == 1;
 
 	++$high_prob_type_count;
 	$cumulative_count += $token_count;
